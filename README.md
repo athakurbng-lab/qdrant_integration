@@ -243,24 +243,136 @@ String collectionConfig = """
 boolean success = OfflineQdrant.createCollection("my_collection", collectionConfig);
 ```
 
-### 4. Upsert Vectors
+### 4. Operations Guide
+
+#### Batch Upsert (Recommended for Performance)
+
+Instead of one by one, insert points in batches (e.g., 100-500 at a time).
 
 ```java
-// Single vector upsert
-String upsertJson = """
+String batchUpsertJson = """
 {
   "points": [
     {
-      "id": 1,
-      "vector": [0.1, 0.2, 0.3, ...],  // 384 dimensions
-      "payload": {"text": "Example document"}
+      "id": 1, 
+      "vector": [...], 
+      "payload": {"text": "Doc 1", "category": "news"}
+    },
+    {
+      "id": 2, 
+      "vector": [...], 
+      "payload": {"text": "Doc 2", "category": "tech"}
+    },
+    // ... add up to 500 points
+    {
+      "id": 100, 
+      "vector": [...], 
+      "payload": {"text": "Doc 100", "category": "sports"}
     }
   ]
 }
 """;
 
-boolean success = OfflineQdrant.update("my_collection", upsertJson);
+boolean success = OfflineQdrant.update("my_collection", batchUpsertJson);
 ```
+
+#### Soft Delete (Using Null/Field Check)
+
+You can "soft delete" by setting a specific field (e.g., `deleted_at`) and filtering for it.
+
+**Step 1: Mark as Deleted**
+```java
+// Update point to mark as deleted
+String softDeleteJson = """
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [...], // Need to provide vector to update
+      "payload": {
+        "text": "Original content",
+        "deleted_at": 1734364824000 // Set timestamp
+      }
+    }
+  ]
+}
+""";
+OfflineQdrant.update("my_collection", softDeleteJson);
+```
+
+**Step 2: Filter Soft-Deleted Items**
+```java
+// Query: Find items where deleted_at IS NULL (not deleted)
+String searchJson = """
+{
+  "vector": [...],
+  "limit": 10,
+  "filter": {
+    "must": [
+      {
+        "key": "deleted_at",
+        "is_null": true    // Only return items where this field is missing/null
+      }
+    ]
+  }
+}
+""";
+String results = OfflineQdrant.search("my_collection", searchJson);
+```
+
+#### Hard Delete (Permanent Removal)
+
+Permanently remove points to free up space.
+
+```java
+String hardDeleteJson = """
+{
+  "delete": {
+    "points": [1, 2, 5, 10] // IDs to remove
+  }
+}
+""";
+OfflineQdrant.update("my_collection", hardDeleteJson);
+```
+
+#### Complex Queries (Filter combinations)
+
+Low-level building block of complex logic.
+
+```java
+// Find: category="tech" AND (rating >= 4.0) AND NOT cancelled
+String searchJson = """
+{
+  "vector": [...],
+  "limit": 10,
+  "filter": {
+    "must": [
+      { "key": "category", "match": { "value": "tech" } },
+      { "key": "rating", "range": { "gte": 4.0 } }
+    ],
+    "must_not": [
+      { "key": "cancelled", "match": { "value": true } }
+    ]
+  }
+}
+""";
+```
+
+#### Searching in Batches
+
+Perform multiple searches in a single call.
+
+`OfflineQdrant` currently supports single search requests. For batch search, simply loop through your queries and call `search()` sequentially. The native HNSW index is fast enough (sub-millisecond) that sequential calls are highly efficient.
+
+```java
+List<String> queries = Arrays.asList("query1", "query2");
+for (String query : queries) {
+    float[] vector = getEmbedding(query);
+    String result = OfflineQdrant.search("my_collection", createSearchJson(vector));
+    // Process result...
+}
+```
+
 
 ### 5. Search
 
