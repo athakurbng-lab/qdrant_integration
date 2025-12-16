@@ -286,6 +286,174 @@ for (int i = 0; i < results.length(); i++) {
 }
 ```
 
+## 💾 Storing and Retrieving Extra Information (Payload)
+
+Each point in Qdrant can store **additional metadata** alongside the vector using the `payload` field.
+
+### What Can You Store in Payload?
+
+✅ **Strings**: Text, sentences, URLs, names  
+✅ **Numbers**: Integers, floats, doubles  
+✅ **Booleans**: true/false flags  
+✅ **Arrays**: Lists of values  
+✅ **Nested Objects**: Complex JSON structures  
+
+**Size Recommendation**: Keep payloads under 1-2 KB for optimal performance
+
+### Storing Data with Payload
+
+```java
+// Example: Store a document with metadata
+String upsertJson = """
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.123, -0.456, 0.789, ...],  // Your 384-dim embedding
+      "payload": {
+        "text": "How to make espresso coffee",
+        "title": "Coffee Brewing Guide",
+        "category": "food",
+        "author": "Abhishek Thakur",
+        "date": "2025-12-16",
+        "url": "https://example.com/article/123",
+        "views": 1500,
+        "published": true,
+        "tags": ["coffee", "brewing", "espresso"]
+      }
+    },
+    {
+      "id": 2,
+      "vector": [0.321, 0.654, -0.987, ...],
+      "payload": {
+        "text": "Best coffee beans for cold brew",
+        "title": "Cold Brew Selection",
+        "category": "food",
+        "author": "Abhishek Thakur",
+        "date": "2025-12-15",
+        "rating": 4.5,
+        "premium": true
+      }
+    }
+  ]
+}
+""";
+
+boolean success = OfflineQdrant.update("my_collection", upsertJson);
+```
+
+### Retrieving Payload from Search Results
+
+```java
+// Search for similar vectors
+String searchJson = """
+{
+  "vector": [0.111, -0.222, 0.333, ...],
+  "limit": 10
+}
+""";
+
+String resultsJson = OfflineQdrant.search("my_collection", searchJson);
+JSONArray results = new JSONArray(resultsJson);
+
+// Extract all information from results
+for (int i = 0; i < results.length(); i++) {
+    JSONObject hit = results.getJSONObject(i);
+    
+    // Basic fields
+    int id = hit.getInt("id");
+    double score = hit.getDouble("score");  // Similarity score (higher = more similar)
+    
+    // Access payload - ALL your extra info!
+    JSONObject payload = hit.getJSONObject("payload");
+    
+    // Extract your custom fields
+    String text = payload.getString("text");
+    String title = payload.getString("title");
+    String category = payload.getString("category");
+    String author = payload.getString("author");
+    String date = payload.getString("date");
+    
+    // Optional fields (check if exists)
+    if (payload.has("url")) {
+        String url = payload.getString("url");
+    }
+    
+    if (payload.has("rating")) {
+        double rating = payload.getDouble("rating");
+    }
+    
+    if (payload.has("tags")) {
+        JSONArray tags = payload.getJSONArray("tags");
+        for (int j = 0; j < tags.length(); j++) {
+            String tag = tags.getString(j);
+        }
+    }
+    
+    // Use your data
+    Log.d("Results", String.format("#%d (score: %.3f) - %s by %s", 
+          i+1, score, title, author));
+}
+```
+
+### Programmatic Example (Building JSON in Code)
+
+```java
+// Build upsert request programmatically
+int myId = 456;
+float[] myEmbedding = getEmbeddingFromModel("your text");  // From your ML model
+String originalText = "This is my sentence";
+
+JSONObject point = new JSONObject();
+point.put("id", myId);
+
+// Add vector
+JSONArray vectorArray = new JSONArray();
+for (float val : myEmbedding) {
+    vectorArray.put(val);
+}
+point.put("vector", vectorArray);
+
+// Add ALL your extra info to payload
+JSONObject payload = new JSONObject();
+payload.put("text", originalText);
+payload.put("category", "technology");
+payload.put("author", "Abhishek Thakur");
+payload.put("timestamp", System.currentTimeMillis());
+payload.put("source", "mobile_app");
+payload.put("language", "en");
+// Add as many custom fields as you need!
+point.put("payload", payload);
+
+// Wrap in points array
+JSONObject upsertRequest = new JSONObject();
+JSONArray points = new JSONArray();
+points.put(point);
+upsertRequest.put("points", points);
+
+// Store in Qdrant
+boolean success = OfflineQdrant.update("my_collection", upsertRequest.toString());
+```
+
+### Use Cases for Payload
+
+1. **RAG (Retrieval-Augmented Generation)**
+   - Store: `{"text": "...", "chunk_id": 5, "document_title": "..."}`
+   - Retrieve original text chunks for LLM context
+
+2. **Semantic Search**
+   - Store: `{"title": "...", "summary": "...", "url": "..."}`
+   - Display rich results with metadata
+
+3. **Recommendation System**
+   - Store: `{"product_name": "...", "price": 99.99, "image_url": "..."}`
+   - Show recommended items with details
+
+4. **Document Classification**
+   - Store: `{"text": "...", "label": "spam", "confidence": 0.95}`
+   - Track classifications with vectors
+
+
 ## 🧪 Test Data Format
 
 ### Upsert File (`upsert_5k.json`)
