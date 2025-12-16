@@ -1,11 +1,16 @@
 # Qdrant Offline Android SDK
 
-A **fully offline** vector search database for Android using Qdrant's core engine with Rust JNI bindings. No internet connection or Qdrant cloud service required!
+> **Author**: Abhishek Thakur  
+> **Repository**: https://github.com/athakurbng-lab/qdrant_integration
+
+A **fully offline** vector search database for Android using Qdrant's core engine with Rust JNI bindings. **No internet connection, no cloud service, no external dependencies required!**
 
 ## 🌟 Features
 
-- ✅ **100% Offline** - Complete vector database running on-device
-- ✅ **Fast HNSW Search** - Sub-millisecond vector similarity search
+- ✅ **100% Offline** - Complete vector database running entirely on-device
+- ✅ **No Internet Required** - Zero network calls, works in airplane mode
+- ✅ **Fast HNSW Search** - Sub-millisecond vector similarity search (0.44ms/query)
+- ✅ **High Accuracy** - 100% recall on test dataset (perfect match with brute-force)
 - ✅ **384-Dimensional Vectors** - Support for standard embedding sizes
 - ✅ **Cosine Similarity** - Optimized for semantic search
 - ✅ **File-Based Testing** - Import JSON vector data easily
@@ -135,8 +140,8 @@ Think of HNSW as a multi-level highway system:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/qdrant-offline-android.git
-cd qdrant-offline-android
+git clone https://github.com/athakurbng-lab/qdrant_integration.git
+cd qdrant_integration/QdrantAndroidSDK
 ```
 
 ### 2. Build Native Library
@@ -399,25 +404,29 @@ ls qdrant-android-sdk/src/main/jniLibs/arm64-v8a/
 ## 📂 Project Structure
 
 ```
-qdrant-offline-android/
-├── qdrant_offline_android/          # Rust JNI layer
+qdrant_integration/QdrantAndroidSDK/
+├── qdrant_offline_android/           # Rust JNI layer (offline core)
 │   ├── src/
-│   │   └── lib.rs                   # Native Qdrant wrapper
-│   ├── Cargo.toml                   # Rust dependencies
-│   └── target/                      # Build output
-├── qdrant-android-sdk/              # Android library
+│   │   └── lib.rs                    # Native Qdrant wrapper
+│   ├── Cargo.toml                    # Rust dependencies
+│   └── target/                       # Build output (generated)
+├── qdrant-android-sdk/               # Android library module
 │   └── src/main/
 │       ├── java/com/qdrant/client/
-│       │   └── OfflineQdrant.java   # JNI declarations
-│       └── jniLibs/arm64-v8a/       # Native library
-├── app/                             # Demo application
+│       │   └── OfflineQdrant.java    # JNI native method declarations
+│       └── jniLibs/arm64-v8a/        # Compiled native library (.so)
+├── app/                              # Demo/test application
 │   └── src/main/java/com/example/qdrant/
-│       └── MainActivity.java        # UI and test logic
-├── generate_small_data.py           # Test data generator
-├── upsert_5k.json                   # Sample vectors
-├── search_100.json                  # Sample queries
-└── README.md                        # This file
+│       └── MainActivity.java         # UI, file picker, recall testing
+├── generate_small_data.py            # Generate 5K test vectors
+├── generate_data.py                  # Generate 50K test vectors
+├── upsert_5k.json                    # Sample vectors (42 MB)
+├── search_100.json                   # Sample queries (841 KB)
+├── README.md                         # This file
+└── GITHUB_UPLOAD_GUIDE.md            # GitHub setup instructions
 ```
+
+**Note**: This repository contains **ONLY offline functionality**. All vector operations run locally on-device with no internet connection required.
 
 ## 🤝 Contributing
 
@@ -429,7 +438,9 @@ Contributions welcome! Please:
 
 ## 📄 License
 
-MIT License - see LICENSE file for details
+MIT License - Copyright (c) 2025 Abhishek Thakur
+
+See LICENSE file for full details.
 
 ## 🙏 Acknowledgments
 
