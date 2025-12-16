@@ -1,0 +1,55 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Android build files
+*.apk
+*.ap_
+*.aab
+local.properties
+.gradle/
+build/
+captures/
+.externalNativeBuild
+.cxx
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+
+# Rust build artifacts
+target/
+Cargo.lock
+
+# Qdrant storage (user data)
+**/qdrant_storage/
+
+# Test data (large files - regenerate locally)
+upsert_50k.json
+search_1k.json
+
+# Keep smaller test files
+# upsert_5k.json
+# search_100.json
+
+# Logs
+*.log
+
+# Temporary files
+*.swp
+*.swo
+*~
+.*.swp
+
+# Native libraries (users build these)
+*.so
+
+# Qdrant master source (large, users clone separately if needed)
+qdrant-master/
+
+# Heap dumps
+*.hprof

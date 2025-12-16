@@ -1,0 +1,8 @@
+[target.aarch64-linux-android]
+ar = "/Users/abhishekthakur/Library/Android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ar"
+linker = "/Users/abhishekthakur/Library/Android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android29-clang"
+
+[env]
+CC_aarch64_linux_android = "/Users/abhishekthakur/Library/Android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android29-clang"
+CXX_aarch64_linux_android = "/Users/abhishekthakur/Library/Android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android29-clang++"
+AR_aarch64_linux_android = "/Users/abhishekthakur/Library/Android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ar"
