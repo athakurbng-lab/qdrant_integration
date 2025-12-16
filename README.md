@@ -286,6 +286,53 @@ for (int i = 0; i < results.length(); i++) {
 }
 ```
 
+### 6. Advanced Operations (Deletion & Filtering)
+
+For comprehensive documentation on deletion strategies and filtering, see **[ADVANCED_OPERATIONS.md](ADVANCED_OPERATIONS.md)**:
+
+**Key Features:**
+- ✅ **Hard Delete**: Permanently remove points from database
+- ✅ **Soft Delete**: Mark as deleted with payload flag (recoverable)
+- ✅ **Filtering**: Search with must/should/must_not conditions
+- ✅ **Range Queries**: Numeric filters (gte, lte, gt, lt)
+- ✅ **Complex Queries**: Combine multiple filter conditions
+
+**Quick Examples:**
+
+```java
+// Hard delete points
+String deleteJson = """
+{"delete": {"points": [1, 2, 3]}}
+""";
+OfflineQdrant.update("my_collection", deleteJson);
+
+// Soft delete (mark as deleted)
+String softDeleteJson = """
+{
+  "points": [{
+    "id": 1,
+    "vector": [...],
+    "payload": {"deleted": true, "deleted_at": 1734364824000}
+  }]
+}
+""";
+OfflineQdrant.update("my_collection", softDeleteJson);
+
+// Search excluding soft-deleted items
+String searchJson = """
+{
+  "vector": [...],
+  "limit": 10,
+  "filter": {
+    "must_not": [
+      {"key": "deleted", "match": {"value": true}}
+    ]
+  }
+}
+""";
+String results = OfflineQdrant.search("my_collection", searchJson);
+```
+
 ## 💾 Storing and Retrieving Extra Information (Payload)
 
 Each point in Qdrant can store **additional metadata** alongside the vector using the `payload` field.
